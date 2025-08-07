@@ -185,8 +185,9 @@ Deno.serve(async (req: Request) => {
       jinaResponse = await fetch(`${JINA_API_URL}${bookmark.url}`, {
         headers: {
           'Accept': 'application/json',
-          'X-With-Generated-Alt': 'true',
-          'User-Agent': 'BookmarkAI/1.0'
+          'User-Agent': 'BookmarkAI/1.0',
+          'Authorization': 'Bearer jina_df5e8a5450d34636be869b6258dc9d2c6MZ4sNVZuwO7_LGCYvIGPrfUJA_9',
+          'X-With-Generated-Alt': 'true'
         },
         signal: controller.signal,
       });

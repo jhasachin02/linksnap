@@ -7,6 +7,8 @@ A full-stack web application that allows users to save bookmarks and automatical
 - **User Authentication**: Secure sign up/sign in with Supabase Auth
 - **Bookmark Management**: Save, view, search, and delete bookmarks
 - **AI-Powered Summaries**: Automatic content summarization using Jina AI API
+- **Drag & Drop Reordering**: Organize bookmarks with intuitive drag-and-drop
+- **Tag System**: Categorize bookmarks with custom tags
 - **Responsive Design**: Modern UI with dark mode support
 - **Real-time Updates**: Live bookmark updates and notifications
 - **Input Validation**: Comprehensive XSS protection and URL validation
@@ -20,6 +22,7 @@ A full-stack web application that allows users to save bookmarks and automatical
 - **Vite** for fast development and building
 - **Tailwind CSS** for styling
 - **Lucide React** for icons
+- **React Beautiful DnD** for drag and drop functionality
 
 ### Backend
 - **Supabase** (PostgreSQL database + Auth + Edge Functions)
@@ -28,9 +31,11 @@ A full-stack web application that allows users to save bookmarks and automatical
 ### APIs
 - **Jina AI Reader API** for content extraction and summarization
 
-### Testing
+### Testing & Quality
 - **Vitest** for unit testing
 - **React Testing Library** for component testing
+- **ESLint** for code quality
+- **TypeScript** for type safety
 
 ## 📋 Prerequisites
 
@@ -124,25 +129,44 @@ npm run test:coverage
 ## 📁 Project Structure
 
 ```
-src/
-├── components/          # React components
-│   ├── AuthForm.tsx    # Authentication form
-│   ├── BookmarkCard.tsx    # Individual bookmark display
-│   ├── BookmarksList.tsx   # Bookmark list with search
-│   ├── AddBookmarkForm.tsx # Add new bookmark modal
-│   └── Layout.tsx      # Main layout wrapper
-├── hooks/              # Custom React hooks
-│   ├── useAuth.ts      # Authentication logic
-│   ├── useBookmarks.ts # Bookmark CRUD operations
-│   └── useDarkMode.ts  # Dark mode toggle
-├── lib/                # External service clients
-│   └── supabase.ts     # Supabase client setup
-├── types/              # TypeScript type definitions
-│   └── index.ts        # App-wide types
-├── utils/              # Utility functions
-│   ├── validation.ts   # Input validation & sanitization
-│   └── errors.ts       # Error handling utilities
-└── test/               # Test files
+BookmarkAI/
+├── docs/                    # Project documentation
+├── public/                  # Static assets
+├── src/
+│   ├── components/          # React components
+│   │   ├── AuthForm.tsx            # Authentication form
+│   │   ├── BookmarkCard.tsx        # Individual bookmark display
+│   │   ├── BookmarksList.tsx       # Bookmark list with search
+│   │   ├── DragDropBookmarksList.tsx # Drag & drop bookmark list
+│   │   ├── AddBookmarkForm.tsx     # Add new bookmark modal
+│   │   ├── TagInput.tsx            # Tag input component
+│   │   ├── TagFilter.tsx           # Tag filtering component
+│   │   ├── Layout.tsx              # Main layout wrapper
+│   │   └── ErrorBoundary.tsx       # Error boundary component
+│   ├── hooks/               # Custom React hooks
+│   │   ├── useAuth.ts              # Authentication logic
+│   │   ├── useBookmarks.ts         # Bookmark CRUD operations
+│   │   └── useDarkMode.ts          # Dark mode toggle
+│   ├── lib/                 # External service clients
+│   │   └── supabase.ts             # Supabase client setup
+│   ├── types/               # TypeScript type definitions
+│   │   └── index.ts                # App-wide types
+│   ├── utils/               # Utility functions
+│   │   ├── validation.ts           # Input validation & sanitization
+│   │   ├── errors.ts               # Error handling utilities
+│   │   └── performance.ts          # Performance utilities
+│   └── test/                # Test files
+│       ├── setup.ts                # Test environment setup
+│       ├── validation.test.ts      # Validation tests
+│       ├── errors.test.ts          # Error handling tests
+│       └── AuthForm.test.tsx       # Component tests
+├── supabase/
+│   ├── functions/           # Edge Functions
+│   │   ├── generate-summary/       # AI summary generation
+│   │   └── _shared/                # Shared utilities
+│   └── migrations/          # Database migrations
+└── [config files]          # Various configuration files
+```
     ├── setup.ts        # Test environment setup
     ├── validation.test.ts
     ├── errors.test.ts
@@ -239,9 +263,30 @@ The application includes comprehensive error handling:
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🙏 Acknowledgments
+## � Documentation
+
+For detailed information, check the `/docs` folder:
+
+- **[Development Guide](./docs/DEVELOPMENT.md)** - Setup and development workflow
+- **[API Documentation](./docs/API.md)** - API endpoints and database schema
+- **[Deployment Guide](./docs/DEPLOYMENT.md)** - Netlify and Supabase deployment
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## �🙏 Acknowledgments
 
 - [Supabase](https://supabase.com/) for the backend infrastructure
 - [Jina AI](https://jina.ai/) for the content summarization API
 - [Tailwind CSS](https://tailwindcss.com/) for the styling framework
 - [Lucide](https://lucide.dev/) for the icon library
+- [React Beautiful DnD](https://github.com/atlassian/react-beautiful-dnd) for drag and drop functionality

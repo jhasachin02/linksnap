@@ -7,9 +7,10 @@ import { TagInput } from './TagInput';
 
 interface AddBookmarkFormProps {
   onClose?: () => void;
+  onBookmarkAdded?: () => void;
 }
 
-export const AddBookmarkForm: React.FC<AddBookmarkFormProps> = ({ onClose }) => {
+export const AddBookmarkForm: React.FC<AddBookmarkFormProps> = ({ onClose, onBookmarkAdded }) => {
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
   const [tags, setTags] = useState<string[]>([]);
@@ -70,6 +71,7 @@ export const AddBookmarkForm: React.FC<AddBookmarkFormProps> = ({ onClose }) => 
         setValidationErrors({});
         setIsOpen(false);
         onClose?.();
+        onBookmarkAdded?.();
       }
     } catch (err) {
       setError(getErrorMessage(err));

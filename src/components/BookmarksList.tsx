@@ -7,7 +7,32 @@ import { Bookmark, Search, Plus } from 'lucide-react';
 import { DragDropBookmarksList } from './DragDropBookmarksList';
 
 export const BookmarksList: React.FC = () => {
-  const { bookmarks, loading, getAllTags, updateBookmarkOrder } = useBookmarks();
+  const { bookmarks, loading, getAllTags, updateBookmarkOrder, refetch } = useBookmarks();
+  // Auto-refresh logic after adding a bookmark
+  const refreshTimeout = React.useRef<NodeJS.Timeout | null>(null);
+  const refreshInterval = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleBookmarkAdded = React.useCallback(() => {
+    // Clear any previous intervals/timeouts
+    if (refreshTimeout.current) clearTimeout(refreshTimeout.current);
+    if (refreshInterval.current) clearInterval(refreshInterval.current);
+
+    // Start interval to refetch every 1s for 20s
+    refreshInterval.current = setInterval(() => {
+      refetch();
+    }, 1000);
+    refreshTimeout.current = setTimeout(() => {
+      if (refreshInterval.current) clearInterval(refreshInterval.current);
+    }, 20000); // 20 seconds
+  }, [refetch]);
+
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return () => {
+      if (refreshTimeout.current) clearTimeout(refreshTimeout.current);
+      if (refreshInterval.current) clearInterval(refreshInterval.current);
+    };
+  }, []);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
 
@@ -82,7 +107,7 @@ export const BookmarksList: React.FC = () => {
           </p>
           {bookmarks.length === 0 && (
             <div className="inline-flex">
-              <AddBookmarkForm />
+              <AddBookmarkForm onBookmarkAdded={handleBookmarkAdded} />
             </div>
           )}
         </div>
@@ -93,7 +118,7 @@ export const BookmarksList: React.FC = () => {
         />
       )}
 
-      {bookmarks.length > 0 && <AddBookmarkForm />}
+      {bookmarks.length > 0 && <AddBookmarkForm onBookmarkAdded={handleBookmarkAdded} />}
     </div>
   );
 };

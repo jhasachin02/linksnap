@@ -85,6 +85,7 @@ export const useBookmarks = () => {
           url: sanitizedUrl,
           title: sanitizedTitle || title || new URL(sanitizedUrl).hostname,
           favicon,
+          tags: bookmarkData.tags || [],
         })
         .select()
         .single();
@@ -188,11 +189,17 @@ export const useBookmarks = () => {
     }
   };
 
+  const getAllTags = () => {
+    const allTags = bookmarks.flatMap(bookmark => bookmark.tags || []);
+    return [...new Set(allTags)].sort();
+  };
+
   return {
     bookmarks,
     loading,
     addBookmark,
     deleteBookmark,
     refetch: fetchBookmarks,
+    getAllTags,
   };
 };

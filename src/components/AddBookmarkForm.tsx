@@ -3,6 +3,7 @@ import { Plus, Link, X, AlertCircle } from 'lucide-react';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { validateUrl, validateAndSanitizeText } from '../utils/validation';
 import { getErrorMessage, BookmarkError } from '../utils/errors';
+import { TagInput } from './TagInput';
 
 interface AddBookmarkFormProps {
   onClose?: () => void;
@@ -11,6 +12,7 @@ interface AddBookmarkFormProps {
 export const AddBookmarkForm: React.FC<AddBookmarkFormProps> = ({ onClose }) => {
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -52,6 +54,7 @@ export const AddBookmarkForm: React.FC<AddBookmarkFormProps> = ({ onClose }) => 
       const result = await addBookmark({
         url: url.trim(),
         title: title.trim() || undefined,
+        tags: tags,
       });
 
       if (result.error) {
@@ -63,6 +66,7 @@ export const AddBookmarkForm: React.FC<AddBookmarkFormProps> = ({ onClose }) => 
       } else {
         setUrl('');
         setTitle('');
+        setTags([]);
         setValidationErrors({});
         setIsOpen(false);
         onClose?.();
@@ -154,6 +158,17 @@ export const AddBookmarkForm: React.FC<AddBookmarkFormProps> = ({ onClose }) => 
                 {validationErrors.title}
               </p>
             )}
+          </div>
+
+          <div>
+            <label htmlFor="tags" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Tags (optional)
+            </label>
+            <TagInput
+              tags={tags}
+              onChange={setTags}
+              placeholder="Add tags (press Enter or comma to add)"
+            />
           </div>
 
           {error && (

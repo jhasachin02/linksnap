@@ -1,18 +1,25 @@
 import React from 'react';
 import { BookmarkCard } from './BookmarkCard';
 import { AddBookmarkForm } from './AddBookmarkForm';
+import { TagFilter } from './TagFilter';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { Bookmark, Search, Plus } from 'lucide-react';
 
 export const BookmarksList: React.FC = () => {
-  const { bookmarks, loading } = useBookmarks();
+  const { bookmarks, loading, getAllTags } = useBookmarks();
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
 
-  const filteredBookmarks = bookmarks.filter(bookmark =>
-    bookmark.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    bookmark.url.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (bookmark.summary && bookmark.summary.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredBookmarks = bookmarks.filter(bookmark => {
+    const matchesSearch = bookmark.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      bookmark.url.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (bookmark.summary && bookmark.summary.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesTags = selectedTags.length === 0 || 
+      selectedTags.every(tag => bookmark.tags?.includes(tag));
+    
+    return matchesSearch && matchesTags;
+  });
 
   if (loading) {
     return (
@@ -35,6 +42,14 @@ export const BookmarksList: React.FC = () => {
             </p>
           </div>
         </div>
+
+        {bookmarks.length > 0 && (
+          <TagFilter
+            availableTags={getAllTags()}
+            selectedTags={selectedTags}
+            onChange={setSelectedTags}
+          />
+        )}
 
         {bookmarks.length > 0 && (
           <div className="relative">

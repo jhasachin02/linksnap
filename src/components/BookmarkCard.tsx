@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExternalLink, Trash2, Clock, Sparkles } from 'lucide-react';
+import { ExternalLink, Trash2, Clock, Sparkles, Tag } from 'lucide-react';
 import { Bookmark } from '../types';
 import { useBookmarks } from '../hooks/useBookmarks';
 
@@ -81,6 +81,22 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({ bookmark }) => {
           <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
             {bookmark.summary}
           </p>
+        </div>
+      )}
+
+      {bookmark.tags && bookmark.tags.length > 0 && (
+        <div className="mb-4">
+          <div className="flex flex-wrap gap-2">
+            {bookmark.tags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+              >
+                <Tag className="w-3 h-3 mr-1" />
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 

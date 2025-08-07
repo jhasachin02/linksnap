@@ -11,6 +11,7 @@ export interface Bookmark {
   title: string;
   favicon?: string;
   summary?: string;
+  tags: string[];
   created_at: string;
   updated_at: string;
 }
@@ -18,4 +19,5 @@ export interface Bookmark {
 export interface BookmarkInput {
   url: string;
   title?: string;
+  tags?: string[];
 }

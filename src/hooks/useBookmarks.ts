@@ -18,7 +18,8 @@ export const useBookmarks = () => {
         .from('bookmarks')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false }); // Fallback for items with same sort_order
 
       if (error) throw error;
       setBookmarks(data || []);
@@ -194,6 +195,25 @@ export const useBookmarks = () => {
     return [...new Set(allTags)].sort();
   };
 
+  const updateBookmarkOrder = async (bookmarks: Bookmark[]) => {
+    if (!user) return;
+    try {
+      // Update multiple bookmarks with new sort_order
+      const updates = bookmarks.map((bookmark, index) => ({
+        id: bookmark.id,
+        sort_order: index,
+      }));
+      const { error } = await supabase
+        .from('bookmarks')
+        .upsert(updates, { onConflict: 'id' });
+      if (error) throw error;
+      setBookmarks(bookmarks);
+    } catch (error) {
+      console.error('Error updating bookmark order:', error);
+      await fetchBookmarks();
+    }
+  };
+
   return {
     bookmarks,
     loading,
@@ -201,5 +221,6 @@ export const useBookmarks = () => {
     deleteBookmark,
     refetch: fetchBookmarks,
     getAllTags,
+    updateBookmarkOrder,
   };
 };

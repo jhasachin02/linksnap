@@ -4,9 +4,10 @@ import { AddBookmarkForm } from './AddBookmarkForm';
 import { TagFilter } from './TagFilter';
 import { useBookmarks } from '../hooks/useBookmarks';
 import { Bookmark, Search, Plus } from 'lucide-react';
+import { DragDropBookmarksList } from './DragDropBookmarksList';
 
 export const BookmarksList: React.FC = () => {
-  const { bookmarks, loading, getAllTags } = useBookmarks();
+  const { bookmarks, loading, getAllTags, updateBookmarkOrder } = useBookmarks();
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
 
@@ -86,11 +87,10 @@ export const BookmarksList: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1">
-          {filteredBookmarks.map((bookmark) => (
-            <BookmarkCard key={bookmark.id} bookmark={bookmark} />
-          ))}
-        </div>
+        <DragDropBookmarksList
+          bookmarks={filteredBookmarks}
+          onReorder={updateBookmarkOrder}
+        />
       )}
 
       {bookmarks.length > 0 && <AddBookmarkForm />}

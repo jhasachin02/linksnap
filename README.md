@@ -2,6 +2,8 @@
 
 A full-stack web application that allows users to save bookmarks and automatically generates AI-powered summaries for each saved URL using the Jina AI API.
 
+**Demo Link :-** https://link-snaps.netlify.app/
+
 ## 🚀 Features
 
 - **User Authentication**: Secure sign up/sign in with Supabase Auth

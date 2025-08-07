@@ -29,7 +29,6 @@ export const validateUrl = (url: string): ValidationResult => {
     return { isValid: false, error: 'URL is too long (max 2048 characters)' };
   }
 
-  // Add protocol if missing
   let normalizedUrl = trimmedUrl;
   if (!normalizedUrl.match(/^https?:\/\//i)) {
     normalizedUrl = `https://${normalizedUrl}`;
@@ -38,12 +37,10 @@ export const validateUrl = (url: string): ValidationResult => {
   try {
     const urlObject = new URL(normalizedUrl);
     
-    // Only allow http and https protocols
     if (!['http:', 'https:'].includes(urlObject.protocol)) {
       return { isValid: false, error: 'Only HTTP and HTTPS URLs are allowed' };
     }
 
-    // Prevent localhost/private IPs in production (optional security measure)
     const hostname = urlObject.hostname.toLowerCase();
     const privatePatterns = [
       'localhost',
@@ -90,18 +87,14 @@ export const validateAndSanitizeText = (text: string, maxLength = 500): Validati
     };
   }
 
-  // Sanitize HTML and remove potentially harmful content
   const sanitized = DOMPurify.sanitize(text.trim(), { 
-    ALLOWED_TAGS: [],  // No HTML tags allowed
-    ALLOWED_ATTR: []   // No attributes allowed
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: []
   });
 
   return { isValid: true, sanitized };
 };
 
-/**
- * Validates email format
- */
 export const validateEmail = (email: string): ValidationResult => {
   if (!email || typeof email !== 'string') {
     return { isValid: false, error: 'Email is required' };
@@ -141,7 +134,6 @@ export const validatePassword = (password: string): ValidationResult => {
     return { isValid: false, error: 'Password is too long (max 128 characters)' };
   }
 
-  // Check for basic complexity
   const hasUpperCase = /[A-Z]/.test(password);
   const hasLowerCase = /[a-z]/.test(password);
   const hasNumbers = /\d/.test(password);
@@ -160,9 +152,6 @@ export const validatePassword = (password: string): ValidationResult => {
   return { isValid: true, sanitized: password };
 };
 
-/**
- * Rate limiting helper (simple client-side)
- */
 export class RateLimiter {
   private attempts: Map<string, number[]> = new Map();
   private readonly maxAttempts: number;
@@ -177,7 +166,6 @@ export class RateLimiter {
     const now = Date.now();
     const attempts = this.attempts.get(key) || [];
     
-    // Clean old attempts
     const validAttempts = attempts.filter(time => now - time < this.windowMs);
     this.attempts.set(key, validAttempts);
 

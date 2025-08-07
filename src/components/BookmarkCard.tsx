@@ -1,7 +1,7 @@
 import React from 'react';
 import { ExternalLink, Trash2, Clock, Sparkles, Tag } from 'lucide-react';
 import { Bookmark } from '../types';
-import { useBookmarks } from '../hooks/useBookmarks';
+import { useBookmarks } from '../hooks';
 
 interface BookmarkCardProps {
   bookmark: Bookmark;

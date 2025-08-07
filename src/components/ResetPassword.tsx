@@ -8,7 +8,6 @@ const ResetPassword: React.FC = () => {
   const [success, setSuccess] = useState('');
   const [sessionChecked, setSessionChecked] = useState(false);
 
-  // Extract access_token and refresh_token from URL hash and set session
   useEffect(() => {
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(hash.replace(/&/g, '&'));

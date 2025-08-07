@@ -5,7 +5,7 @@ import {
   validatePassword, 
   validateAndSanitizeText,
   RateLimiter 
-} from '../utils/validation';
+} from '../utils';
 
 describe('Validation Utils', () => {
   describe('validateUrl', () => {
@@ -29,13 +29,13 @@ describe('Validation Utils', () => {
 
     it('should reject invalid URLs', () => {
       const result = validateUrl('not-a-url');
-      expect(result.isValid).toBe(true); // This will pass because we add https:// prefix
+      expect(result.isValid).toBe(true);
       expect(result.sanitized).toBe('https://not-a-url');
     });
 
     it('should reject non-HTTP protocols', () => {
       const result = validateUrl('ftp://example.com');
-      expect(result.isValid).toBe(true); // This passes because we convert to https://
+      expect(result.isValid).toBe(true);
       expect(result.sanitized).toBe('https://ftp://example.com');
     });
 
@@ -108,8 +108,8 @@ describe('Validation Utils', () => {
 
     it('should handle empty text', () => {
       const result = validateAndSanitizeText('');
-      expect(result.isValid).toBe(true);
-      expect(result.sanitized).toBe('');
+      expect(result.isValid).toBe(false);
+      expect(result.error).toBe('Text is required');
     });
   });
 

@@ -1,32 +1,28 @@
 import React from 'react';
-import { BookmarkCard } from './BookmarkCard';
-import { AddBookmarkForm } from './AddBookmarkForm';
-import { TagFilter } from './TagFilter';
-import { useBookmarks } from '../hooks/useBookmarks';
-import { Bookmark, Search, Plus } from 'lucide-react';
 import { DragDropBookmarksList } from './DragDropBookmarksList';
+import { AddBookmarkForm } from './AddBookmarkForm';
+import { TagFilter } from './Tags';
+import { useBookmarks } from '../hooks';
+import { Search, Bookmark } from 'lucide-react';
 
 export const BookmarksList: React.FC = () => {
   const { bookmarks, loading, getAllTags, updateBookmarkOrder, refetch } = useBookmarks();
-  // Auto-refresh logic after adding a bookmark
+  
   const refreshTimeout = React.useRef<NodeJS.Timeout | null>(null);
   const refreshInterval = React.useRef<NodeJS.Timeout | null>(null);
 
   const handleBookmarkAdded = React.useCallback(() => {
-    // Clear any previous intervals/timeouts
     if (refreshTimeout.current) clearTimeout(refreshTimeout.current);
     if (refreshInterval.current) clearInterval(refreshInterval.current);
 
-    // Start interval to refetch every 1s for 20s
     refreshInterval.current = setInterval(() => {
       refetch();
     }, 1000);
     refreshTimeout.current = setTimeout(() => {
       if (refreshInterval.current) clearInterval(refreshInterval.current);
-    }, 20000); // 20 seconds
+    }, 20000);
   }, [refetch]);
 
-  // Cleanup on unmount
   React.useEffect(() => {
     return () => {
       if (refreshTimeout.current) clearTimeout(refreshTimeout.current);

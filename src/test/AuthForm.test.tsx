@@ -2,10 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AuthForm } from '../components/AuthForm';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../hooks';
 
-// Mock the hooks
-vi.mock('../hooks/useAuth', () => ({
+vi.mock('../hooks', () => ({
   useAuth: vi.fn(),
 }));
 
@@ -59,7 +58,6 @@ describe('AuthForm', () => {
     const user = userEvent.setup();
     render(<AuthForm />);
     
-    // Switch to sign up
     await user.click(screen.getByText(/don't have an account\?/i));
     
     const passwordInput = screen.getByLabelText(/password/i);
@@ -80,7 +78,7 @@ describe('AuthForm', () => {
     const passwordInput = screen.getByLabelText(/password/i);
     expect(passwordInput).toHaveAttribute('type', 'password');
     
-    const toggleButton = screen.getByRole('button', { name: '' }); // Eye icon button
+    const toggleButton = screen.getByRole('button', { name: '' });
     await user.click(toggleButton);
     
     expect(passwordInput).toHaveAttribute('type', 'text');

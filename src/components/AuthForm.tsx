@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Bookmark, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { validateEmail, validatePassword, RateLimiter } from '../utils/validation';
-import { getErrorMessage } from '../utils/errors';
+import { useAuth } from '../hooks';
+import { validateEmail, validatePassword, RateLimiter, getErrorMessage } from '../utils';
 
 export const AuthForm: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -20,22 +19,8 @@ export const AuthForm: React.FC = () => {
   const [resetEmail, setResetEmail] = useState('');
   const [resetMsg, setResetMsg] = useState<string | null>(null);
 
-  const { signIn, signUp, signInWithGoogle } = useAuth();
-  const handleGoogleSignIn = async () => {
-    setError('');
-    setLoading(true);
-    try {
-      const { error } = await signInWithGoogle();
-      if (error) {
-        setError(error.message);
-      }
-    } catch (err: any) {
-      setError(`Unexpected error: ${err?.message || err}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-  const rateLimiter = new RateLimiter(5, 60000); // 5 attempts per minute
+  const { signIn, signUp } = useAuth();
+  const rateLimiter = new RateLimiter(5, 60000);
 
   const validateForm = () => {
     const errors: { email?: string; password?: string } = {};
@@ -85,7 +70,6 @@ export const AuthForm: React.FC = () => {
       return;
     }
 
-    // Rate limiting
     const userKey = email.toLowerCase();
     if (!rateLimiter.isAllowed(userKey)) {
       setError('Too many attempts. Please try again in a minute.');
@@ -106,8 +90,7 @@ export const AuthForm: React.FC = () => {
         : await signIn(sanitizedEmail, password);
 
       if (error) {
-        // Show full error details for debugging
-        setError(`${getErrorMessage(error)}\nStatus: ${error.status || ''}\nName: ${error.name || ''}`);
+        setError(getErrorMessage(error));
       } else if (!data?.session && !data?.user) {
         setError('No session or user returned. Check Supabase Auth settings.');
       }
@@ -258,23 +241,7 @@ export const AuthForm: React.FC = () => {
                 {loading ? 'Loading...' : isSignUp ? 'Sign up' : 'Sign in'}
               </button>
 
-              <div className="flex items-center my-4">
-                <div className="flex-grow border-t border-gray-300 dark:border-gray-600" />
-                <span className="mx-2 text-gray-400 text-xs">or</span>
-                <div className="flex-grow border-t border-gray-300 dark:border-gray-600" />
-              </div>
-              <button
-                type="button"
-                onClick={handleGoogleSignIn}
-                disabled={loading}
-                className="w-full py-3 px-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-lg flex items-center justify-center gap-2 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Sign in with Google"
-              >
-                <svg className="h-5 w-5" viewBox="0 0 48 48"><g><path fill="#4285F4" d="M24 9.5c3.54 0 6.7 1.22 9.19 3.61l6.85-6.85C36.68 2.7 30.77 0 24 0 14.82 0 6.71 5.82 2.69 14.09l7.98 6.2C12.13 13.6 17.56 9.5 24 9.5z"/><path fill="#34A853" d="M46.1 24.55c0-1.64-.15-3.22-.42-4.74H24v9.01h12.42c-.54 2.9-2.18 5.36-4.65 7.01l7.19 5.59C43.93 37.13 46.1 31.3 46.1 24.55z"/><path fill="#FBBC05" d="M10.67 28.29c-1.13-3.36-1.13-6.97 0-10.33l-7.98-6.2C.99 16.09 0 19.92 0 24c0 4.08.99 7.91 2.69 12.24l7.98-6.2z"/><path fill="#EA4335" d="M24 48c6.48 0 11.93-2.15 15.9-5.85l-7.19-5.59c-2.01 1.35-4.59 2.15-8.71 2.15-6.44 0-11.87-4.1-13.33-9.55l-7.98 6.2C6.71 42.18 14.82 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></g></svg>
-                Continue with Google
-              </button>
-
-              <div className="text-center flex flex-col gap-2 mt-2">
+              <div className="text-center flex flex-col gap-2 mt-6">
                 <button
                   type="button"
                   onClick={() => setShowReset(true)}

@@ -38,7 +38,6 @@ export class BookmarkError extends Error {
  * Error codes and their user-friendly messages
  */
 export const ERROR_CODES = {
-  // Authentication errors
   AUTH_INVALID_CREDENTIALS: 'Invalid email or password',
   AUTH_USER_NOT_FOUND: 'No account found with this email',
   AUTH_EMAIL_IN_USE: 'An account with this email already exists',
@@ -46,7 +45,6 @@ export const ERROR_CODES = {
   AUTH_SESSION_EXPIRED: 'Your session has expired. Please sign in again',
   AUTH_RATE_LIMITED: 'Too many attempts. Please try again later',
 
-  // Bookmark errors
   BOOKMARK_INVALID_URL: 'Please enter a valid URL',
   BOOKMARK_DUPLICATE_URL: 'This URL has already been bookmarked',
   BOOKMARK_NOT_FOUND: 'Bookmark not found',
@@ -54,36 +52,28 @@ export const ERROR_CODES = {
   BOOKMARK_SAVE_FAILED: 'Failed to save bookmark',
   BOOKMARK_DELETE_FAILED: 'Failed to delete bookmark',
 
-  // Summary generation errors
   SUMMARY_GENERATION_FAILED: 'Unable to generate summary for this URL',
   SUMMARY_CONTENT_NOT_FOUND: 'No content found to summarize',
   SUMMARY_SERVICE_UNAVAILABLE: 'Summary service is temporarily unavailable',
 
-  // Network errors
   NETWORK_ERROR: 'Network error. Please check your connection',
   SERVER_ERROR: 'Server error. Please try again later',
   TIMEOUT_ERROR: 'Request timed out. Please try again',
 
-  // Validation errors
   VALIDATION_REQUIRED_FIELD: 'This field is required',
   VALIDATION_INVALID_FORMAT: 'Invalid format',
   VALIDATION_TOO_LONG: 'Input is too long',
   VALIDATION_TOO_SHORT: 'Input is too short',
 
-  // General errors
   UNKNOWN_ERROR: 'An unexpected error occurred'
 } as const;
 
-/**
- * Maps various error types to user-friendly messages
- */
 export const getErrorMessage = (error: unknown): string => {
   if (error instanceof BookmarkError) {
     return error.message;
   }
 
   if (error instanceof Error) {
-    // Supabase auth errors
     if (error.message.includes('Invalid login credentials')) {
       return ERROR_CODES.AUTH_INVALID_CREDENTIALS;
     }
@@ -97,7 +87,6 @@ export const getErrorMessage = (error: unknown): string => {
       return ERROR_CODES.AUTH_SESSION_EXPIRED;
     }
 
-    // Network errors
     if (error.message.includes('fetch')) {
       return ERROR_CODES.NETWORK_ERROR;
     }
@@ -115,9 +104,6 @@ export const getErrorMessage = (error: unknown): string => {
   return ERROR_CODES.UNKNOWN_ERROR;
 };
 
-/**
- * Safely executes an async function with error handling
- */
 export const safeAsync = async <T>(
   fn: () => Promise<T>,
   fallback?: T
@@ -152,14 +138,8 @@ export const logError = (error: AppError | Error, context?: Record<string, unkno
   };
 
   console.error('Application Error:', errorInfo);
-  
-  // In production, you might want to send this to an error tracking service
-  // like Sentry, LogRocket, or similar
 };
 
-/**
- * Retry mechanism for failed operations
- */
 export const withRetry = async <T>(
   fn: () => Promise<T>,
   maxRetries = 3,
@@ -177,7 +157,6 @@ export const withRetry = async <T>(
         throw lastError;
       }
 
-      // Wait before retrying (exponential backoff)
       await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, attempt - 1)));
     }
   }

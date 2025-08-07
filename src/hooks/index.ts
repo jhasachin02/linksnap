@@ -1,9 +1,69 @@
 import { useState, useEffect } from 'react';
+import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { Bookmark, BookmarkInput } from '../types';
-import { useAuth } from './useAuth';
-import { validateUrl, validateAndSanitizeText } from '../utils/validation';
-import { BookmarkError, getErrorMessage, logError, withRetry } from '../utils/errors';
+import { validateUrl, validateAndSanitizeText, BookmarkError, getErrorMessage, logError, withRetry } from '../utils';
+
+export const useAuth = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signUp = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) throw error;
+    return { data, error: null };
+  };
+
+  const signIn = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return { data, error: null };
+  };
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  };
+
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) throw error;
+  };
+
+  return { user, loading, signUp, signIn, signOut, resetPassword };
+};
+
+export const useDarkMode = () => {
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    if (saved !== null) return JSON.parse(saved);
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    document.documentElement.classList.toggle('dark', darkMode);
+  }, [darkMode]);
+
+  const toggleDarkMode = () => setDarkMode(!darkMode);
+  return { darkMode, toggleDarkMode };
+};
 
 export const useBookmarks = () => {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
@@ -19,7 +79,7 @@ export const useBookmarks = () => {
         .select('*')
         .eq('user_id', user.id)
         .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: false }); // Fallback for items with same sort_order
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setBookmarks(data || []);
@@ -40,7 +100,6 @@ export const useBookmarks = () => {
     }
 
     try {
-      // Validate and sanitize URL
       const urlValidation = validateUrl(bookmarkData.url);
       if (!urlValidation.isValid) {
         return { 
@@ -49,7 +108,6 @@ export const useBookmarks = () => {
         };
       }
 
-      // Validate and sanitize title
       const titleValidation = validateAndSanitizeText(bookmarkData.title || '', 200);
       if (!titleValidation.isValid) {
         return { 
@@ -61,7 +119,6 @@ export const useBookmarks = () => {
       const sanitizedUrl = urlValidation.sanitized!;
       const sanitizedTitle = titleValidation.sanitized || '';
 
-      // Check for duplicate URLs
       const { data: existingBookmark } = await supabase
         .from('bookmarks')
         .select('id')
@@ -76,7 +133,6 @@ export const useBookmarks = () => {
         };
       }
 
-      // Extract metadata from URL with retry mechanism
       const { title, favicon } = await withRetry(() => extractMetadata(sanitizedUrl), 2, 1000);
       
       const { data, error } = await supabase
@@ -95,11 +151,9 @@ export const useBookmarks = () => {
         throw new BookmarkError('BOOKMARK_SAVE_FAILED', getErrorMessage(error), 'medium');
       }
 
-      // Generate summary with error handling
       try {
         await generateSummary(data.id);
       } catch (summaryError) {
-        // Don't fail the entire operation if summary generation fails
         logError(summaryError as Error, { bookmarkId: data.id, url: sanitizedUrl });
       }
       
@@ -111,46 +165,32 @@ export const useBookmarks = () => {
         : new BookmarkError('BOOKMARK_SAVE_FAILED', getErrorMessage(error), 'medium');
       
       logError(bookmarkError, { url: bookmarkData.url });
-      return { data: null, error: bookmarkError };
+      return { error: bookmarkError, data: null };
     }
   };
 
   const deleteBookmark = async (id: string) => {
-    if (!user) {
-      return { error: new BookmarkError('AUTH_SESSION_EXPIRED', 'User not authenticated', 'high') };
-    }
+    if (!user) return;
 
     try {
       const { error } = await supabase
         .from('bookmarks')
         .delete()
         .eq('id', id)
-        .eq('user_id', user.id); // Ensure user can only delete their own bookmarks
+        .eq('user_id', user.id);
 
-      if (error) {
-        throw new BookmarkError('BOOKMARK_DELETE_FAILED', getErrorMessage(error), 'medium');
-      }
-      
+      if (error) throw error;
       await fetchBookmarks();
-      return { error: null };
     } catch (error) {
-      const bookmarkError = error instanceof BookmarkError 
-        ? error 
-        : new BookmarkError('BOOKMARK_DELETE_FAILED', getErrorMessage(error), 'medium');
-      
-      logError(bookmarkError, { bookmarkId: id });
-      return { error: bookmarkError };
+      console.error('Error deleting bookmark:', error);
     }
   };
 
   const generateSummary = async (bookmarkId: string) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-summary`, {
+      const response = await fetch(`/.netlify/functions/generate-summary`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bookmarkId }),
       });
 
@@ -164,7 +204,6 @@ export const useBookmarks = () => {
 
       await fetchBookmarks();
     } catch (error) {
-      // Log the error but don't throw - summary generation is optional
       logError(error as Error, { bookmarkId });
       throw error;
     }
@@ -176,7 +215,6 @@ export const useBookmarks = () => {
       const domain = urlObject.hostname;
       const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
       
-      // Enhanced title extraction - you could improve this with a metadata service
       const cleanDomain = domain.replace(/^www\./, '').replace(/\.[^.]*$/, '');
       const title = cleanDomain.charAt(0).toUpperCase() + cleanDomain.slice(1);
       
@@ -184,8 +222,8 @@ export const useBookmarks = () => {
     } catch (error) {
       logError(error as Error, { url });
       return { 
-        title: url.length > 50 ? url.substring(0, 50) + '...' : url, 
-        favicon: undefined 
+        title: 'Bookmark', 
+        favicon: 'https://www.google.com/s2/favicons?domain=example.com&sz=32' 
       };
     }
   };
@@ -198,7 +236,6 @@ export const useBookmarks = () => {
   const updateBookmarkOrder = async (bookmarks: Bookmark[]) => {
     if (!user) return;
     try {
-      // Update multiple bookmarks with new sort_order
       const updates = bookmarks.map((bookmark, index) => ({
         id: bookmark.id,
         sort_order: index,

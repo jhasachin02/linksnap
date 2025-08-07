@@ -2,91 +2,58 @@ import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const JINA_API_URL = 'https://r.jina.ai/';
-const MAX_CONTENT_LENGTH = 10000; // Limit content length for processing
-const SUMMARY_MAX_LENGTH = 500; // Max summary length
+const MAX_CONTENT_LENGTH = 10000;
+const SUMMARY_MAX_LENGTH = 500;
 
 interface RequestPayload {
   bookmarkId: string;
 }
 
 interface JinaResponse {
-  data?: {
-    content?: string;
-    title?: string;
-  };
+  data?: { content?: string; title?: string; };
   content?: string;
   title?: string;
 }
 
-/**
- * Validates URL to ensure it's safe to process
- */
-function validateUrl(url: string): boolean {
+const validateUrl = (url: string): boolean => {
   try {
     const urlObj = new URL(url);
-    const allowedProtocols = ['http:', 'https:'];
+    if (!['http:', 'https:'].includes(urlObj.protocol)) return false;
     
-    if (!allowedProtocols.includes(urlObj.protocol)) {
-      return false;
-    }
-
-    // Block localhost/private IPs in production
     const hostname = urlObj.hostname.toLowerCase();
-    const privatePatterns = [
-      'localhost',
-      '127.0.0.1',
-      '::1',
-      /^192\.168\./,
-      /^10\./,
-      /^172\.(1[6-9]|2[0-9]|3[0-1])\./
-    ];
-
-    return !privatePatterns.some(pattern => {
-      if (typeof pattern === 'string') {
-        return hostname === pattern;
-      }
-      return pattern.test(hostname);
-    });
+    const privatePatterns = ['localhost', '127.0.0.1', '::1', /^192\.168\./, /^10\./, /^172\.(1[6-9]|2[0-9]|3[0-1])\./];
+    
+    return !privatePatterns.some(pattern => 
+      typeof pattern === 'string' ? hostname === pattern : pattern.test(hostname)
+    );
   } catch {
     return false;
   }
-}
+};
 
-/**
- * Generates a summary from content using simple extractive summarization
- */
-function generateSummary(content: string): string {
-  if (!content || content.length === 0) {
-    throw new Error('No content to summarize');
-  }
+const generateSummary = (content: string): string => {
+  if (!content?.length) throw new Error('No content to summarize');
 
-  // Clean and normalize the content
   let cleanContent = content
-    .replace(/\s+/g, ' ') // Replace multiple whitespace with single space
-    .replace(/[^\w\s.,!?;:()-]/g, '') // Remove special characters
+    .replace(/\s+/g, ' ')
+    .replace(/[^\w\s.,!?;:()-]/g, '')
     .trim();
 
-  if (cleanContent.length === 0) {
-    throw new Error('No meaningful content found after cleaning');
-  }
+  if (!cleanContent.length) throw new Error('No meaningful content found after cleaning');
 
-  // Truncate if too long
   if (cleanContent.length > MAX_CONTENT_LENGTH) {
     cleanContent = cleanContent.substring(0, MAX_CONTENT_LENGTH);
   }
 
-  // Split into sentences
   const sentences = cleanContent
     .split(/[.!?]+/)
     .map(s => s.trim())
-    .filter(s => s.length > 10); // Filter out very short sentences
+    .filter(s => s.length > 10);
 
-  if (sentences.length === 0) {
-    // Fallback: use first part of content
+  if (!sentences.length) {
     return cleanContent.substring(0, Math.min(200, cleanContent.length)) + '...';
   }
 
-  // Take first 2-3 sentences based on length
   let summary = '';
   let sentenceCount = 0;
   const maxSentences = 3;
@@ -110,7 +77,6 @@ function generateSummary(content: string): string {
 }
 
 Deno.serve(async (req: Request) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 200,
@@ -129,7 +95,6 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // Get Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -139,7 +104,6 @@ Deno.serve(async (req: Request) => {
       throw new Error('Failed to initialize Supabase client');
     }
 
-    // Parse and validate request
     let requestBody;
     try {
       requestBody = await req.json();
@@ -153,7 +117,6 @@ Deno.serve(async (req: Request) => {
       throw new Error('Valid bookmark ID is required');
     }
 
-    // Get the bookmark with user verification
     const { data: bookmark, error: fetchError } = await supabaseClient
       .from('bookmarks')
       .select('*')
@@ -169,16 +132,14 @@ Deno.serve(async (req: Request) => {
       throw new Error('Invalid bookmark data');
     }
 
-    // Validate URL before processing
     if (!validateUrl(bookmark.url)) {
       throw new Error('URL is not safe to process');
     }
 
     console.log(`Processing summary for: ${bookmark.url}`);
 
-    // Generate summary using Jina AI with timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     let jinaResponse: Response;
     try {
@@ -207,17 +168,14 @@ Deno.serve(async (req: Request) => {
       throw new Error('Invalid response from content service');
     }
     
-    // Extract content from different possible response formats
     const content = jinaData.data?.content || jinaData.content || '';
     
     if (!content || content.trim().length === 0) {
       throw new Error('No content found to summarize');
     }
 
-    // Generate summary
     const summary = generateSummary(content);
 
-    // Update the bookmark with the summary
     const { error: updateError } = await supabaseClient
       .from('bookmarks')
       .update({ 

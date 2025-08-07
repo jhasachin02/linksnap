@@ -1,7 +1,6 @@
 import React from 'react';
 import { Moon, Sun, Bookmark, LogOut } from 'lucide-react';
-import { useDarkMode } from '../hooks/useDarkMode';
-import { useAuth } from '../hooks/useAuth';
+import { useDarkMode, useAuth } from '../hooks';
 
 interface LayoutProps {
   children: React.ReactNode;

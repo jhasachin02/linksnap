@@ -43,7 +43,6 @@ class PerformanceMonitor {
       duration,
     });
 
-    // Log slow operations in development
     if (process.env.NODE_ENV === 'development' && duration > 1000) {
       console.warn(`Slow operation detected: ${name} took ${duration.toFixed(2)}ms`);
     }
@@ -51,9 +50,6 @@ class PerformanceMonitor {
     return duration;
   }
 
-  /**
-   * Get all recorded metrics
-   */
   getMetrics(): PerformanceMetric[] {
     return Array.from(this.metrics.values()).filter(m => m.duration !== undefined);
   }
@@ -68,9 +64,6 @@ class PerformanceMonitor {
 
 export const performanceMonitor = new PerformanceMonitor();
 
-/**
- * Higher-order function to measure async function performance
- */
 export function measureAsync<T extends (...args: any[]) => Promise<any>>(
   name: string,
   fn: T
@@ -86,9 +79,7 @@ export function measureAsync<T extends (...args: any[]) => Promise<any>>(
   }) as T;
 }
 
-/**
- * Debounce utility for search and input handling
- */
+=
 export function debounce<T extends (...args: any[]) => void>(
   func: T,
   wait: number
@@ -101,14 +92,11 @@ export function debounce<T extends (...args: any[]) => void>(
   };
 }
 
-/**
- * Cache with TTL (Time To Live) for API responses
- */
 export class TTLCache<T> {
   private cache = new Map<string, { data: T; expiry: number }>();
   private readonly ttl: number;
 
-  constructor(ttlMs: number = 5 * 60 * 1000) { // Default 5 minutes
+  constructor(ttlMs: number = 5 * 60 * 1000) {
     this.ttl = ttlMs;
   }
 
@@ -154,7 +142,6 @@ export class TTLCache<T> {
   }
 
   size(): number {
-    // Clean expired items first
     const now = Date.now();
     for (const [key, item] of this.cache.entries()) {
       if (now > item.expiry) {
@@ -166,18 +153,12 @@ export class TTLCache<T> {
   }
 }
 
-/**
- * Lazy loading utility for components
- */
 export function createLazyComponent(
   loader: () => Promise<{ default: React.ComponentType<any> }>
 ) {
   return React.lazy(loader);
 }
 
-/**
- * Simple request deduplication
- */
 class RequestDeduplicator {
   private pendingRequests = new Map<string, Promise<any>>();
 

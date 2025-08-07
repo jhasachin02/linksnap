@@ -1,8 +1,7 @@
-import React from 'react';
 import { Layout } from './components/Layout';
 import { AuthForm } from './components/AuthForm';
 import { BookmarksList } from './components/BookmarksList';
-import { useAuth } from './hooks/useAuth';
+import { useAuth } from './hooks';
 import ResetPassword from './components/ResetPassword';
 import { Routes, Route } from 'react-router-dom';
 

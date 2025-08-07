@@ -8,7 +8,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Required variables: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY');
 }
 
-// Fallback for development/demo purposes - you should replace these with your actual values
 const fallbackUrl = supabaseUrl || 'https://your-project.supabase.co';
 const fallbackKey = supabaseAnonKey || 'your-anon-key';
 

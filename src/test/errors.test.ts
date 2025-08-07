@@ -2,9 +2,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { 
   BookmarkError, 
   getErrorMessage, 
-  safeAsync, 
-  withRetry 
-} from '../utils/errors';
+  withRetry,
+  safeAsync
+} from '../utils';
 
 describe('Error Utils', () => {
   describe('BookmarkError', () => {

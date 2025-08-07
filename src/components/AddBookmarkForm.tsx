@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Plus, Link, X, AlertCircle } from 'lucide-react';
-import { useBookmarks } from '../hooks/useBookmarks';
-import { validateUrl, validateAndSanitizeText } from '../utils/validation';
-import { getErrorMessage, BookmarkError } from '../utils/errors';
-import { TagInput } from './TagInput';
+import { Plus, Link, X } from 'lucide-react';
+import { useBookmarks } from '../hooks';
+import { validateUrl, validateAndSanitizeText, getErrorMessage, BookmarkError } from '../utils';
+import { TagInput } from './Tags';
 
 interface AddBookmarkFormProps {
   onClose?: () => void;

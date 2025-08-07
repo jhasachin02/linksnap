@@ -130,7 +130,6 @@ npm run test:coverage
 
 ```
 BookmarkAI/
-├── docs/                    # Project documentation
 ├── public/                  # Static assets
 ├── src/
 │   ├── components/          # React components
@@ -139,38 +138,28 @@ BookmarkAI/
 │   │   ├── BookmarksList.tsx       # Bookmark list with search
 │   │   ├── DragDropBookmarksList.tsx # Drag & drop bookmark list
 │   │   ├── AddBookmarkForm.tsx     # Add new bookmark modal
-│   │   ├── TagInput.tsx            # Tag input component
-│   │   ├── TagFilter.tsx           # Tag filtering component
+│   │   ├── Tags.tsx                # Tag input & filtering (consolidated)
 │   │   ├── Layout.tsx              # Main layout wrapper
-│   │   └── ErrorBoundary.tsx       # Error boundary component
-│   ├── hooks/               # Custom React hooks
-│   │   ├── useAuth.ts              # Authentication logic
-│   │   ├── useBookmarks.ts         # Bookmark CRUD operations
-│   │   └── useDarkMode.ts          # Dark mode toggle
+│   │   ├── ErrorBoundary.tsx       # Error boundary component
+│   │   └── ResetPassword.tsx       # Password reset component
+│   ├── hooks/               # Custom React hooks (consolidated)
+│   │   └── index.ts                # All hooks: useAuth, useBookmarks, useDarkMode
 │   ├── lib/                 # External service clients
 │   │   └── supabase.ts             # Supabase client setup
 │   ├── types/               # TypeScript type definitions
 │   │   └── index.ts                # App-wide types
-│   ├── utils/               # Utility functions
-│   │   ├── validation.ts           # Input validation & sanitization
-│   │   ├── errors.ts               # Error handling utilities
-│   │   └── performance.ts          # Performance utilities
+│   ├── utils/               # Utility functions (consolidated)
+│   │   └── index.ts                # All utilities: validation, errors, performance
 │   └── test/                # Test files
 │       ├── setup.ts                # Test environment setup
 │       ├── validation.test.ts      # Validation tests
-│       ├── errors.test.ts          # Error handling tests
-│       └── AuthForm.test.tsx       # Component tests
+│       └── errors.test.ts          # Error handling tests
 ├── supabase/
 │   ├── functions/           # Edge Functions
 │   │   ├── generate-summary/       # AI summary generation
 │   │   └── _shared/                # Shared utilities
 │   └── migrations/          # Database migrations
 └── [config files]          # Various configuration files
-```
-    ├── setup.ts        # Test environment setup
-    ├── validation.test.ts
-    ├── errors.test.ts
-    └── AuthForm.test.tsx
 ```
 
 ## 🔧 Configuration
@@ -232,6 +221,8 @@ The application includes comprehensive error handling:
 - **Request Deduplication**: Prevent duplicate API calls
 - **Caching**: Local storage for user preferences
 - **Database Indexes**: Optimized queries for faster performance
+- **Code Consolidation**: Utility functions, hooks, and components consolidated for better maintainability
+- **Professional Structure**: Clean, comment-free codebase optimized for production
 
 ## 🛡 Security Considerations
 
@@ -263,27 +254,19 @@ The application includes comprehensive error handling:
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## � Documentation
-
-For detailed information, check the `/docs` folder:
-
-- **[Development Guide](./docs/DEVELOPMENT.md)** - Setup and development workflow
-- **[API Documentation](./docs/API.md)** - API endpoints and database schema
-- **[Deployment Guide](./docs/DEPLOYMENT.md)** - Netlify and Supabase deployment
-
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## �🙏 Acknowledgments
+## 🙏 Acknowledgments
 
 - [Supabase](https://supabase.com/) for the backend infrastructure
 - [Jina AI](https://jina.ai/) for the content summarization API
